@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>易传胤 · 异界爆发 | 当代艺术家作品集</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            font-weight: 340;
+            line-height: 1.5;
+            color: #1a1a1a;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        button, a, .nav-btn, .lang-btn, .series-tile, .close-btn {
+            transition: opacity 0.2s ease, background 0.2s ease;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: inherit;
+        }
+
+        button:hover, .nav-btn:hover, .lang-btn:hover, .series-tile:hover {
+            opacity: 0.7;
+        }
+
+        .app {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            background: #ffffff;
+        }
+
+        /* 首页全屏背景 */
+        .homepage {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #e8e2d6;
+        }
+
+        .bg-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .homepage-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.08);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* 语言切换 - 极简右上角 */
+        .lang-switch {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            z-index: 30;
+            display: flex;
+            gap: 0.6rem;
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(12px);
+            padding: 0.3rem 1rem;
+            border-radius: 60px;
+            border: 0.5px solid rgba(255,255,255,0.4);
+        }
+
+        .lang-btn {
+            font-size: 0.7rem;
+            font-weight: 420;
+            letter-spacing: 0.05em;
+            color: #2a2a2a;
+            padding: 0.3rem 0.6rem;
+            border-radius: 40px;
+            opacity: 0.6;
+        }
+
+        .lang-btn.active {
+            opacity: 1;
+            background: rgba(20, 20, 20, 0.12);
+            font-weight: 500;
+            color: #111;
+        }
+
+        /* 三大入口导航 */
+        .main-nav {
+            position: absolute;
+            bottom: 10%;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            z-index: 20;
+            flex-wrap: wrap;
+            padding: 0 1.5rem;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(8px);
+            padding: 0.7rem 2rem;
+            font-size: 1rem;
+            font-weight: 400;
+            letter-spacing: 0.03em;
+            color: #1e1e1e;
+            border-radius: 48px;
+            text-transform: uppercase;
+            min-width: 110px;
+        }
+
+        /* 浮层页面 */
+        .page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            z-index: 200;
+            overflow-y: auto;
+            padding: 5rem 2rem 4rem;
+            transform: translateY(100%);
+            transition: transform 0.5s cubic-bezier(0.2, 0.95, 0.4, 1.05);
+            will-change: transform;
+        }
+
+        .page.open {
+            transform: translateY(0);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.8rem;
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: #2c2c2c;
+            z-index: 210;
+            line-height: 1;
+            padding: 0.4rem;
+        }
+
+        .page-content {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 380;
+            letter-spacing: -0.01em;
+            margin-bottom: 2.2rem;
+            border-bottom: 1px solid #ececec;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+            color: #1c1c1c;
+        }
+
+        /* 作家介绍 */
+        .artist-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3rem;
+            align-items: flex-start;
+        }
+
+        .artist-text {
+            flex: 2;
+            min-width: 240px;
+        }
+
+        .artist-photo {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .artist-photo img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            background: #f0f0f0;
+        }
+
+        .artist-name {
+            font-size: 2.2rem;
+            font-weight: 380;
+            letter-spacing: -0.01em;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .artist-bio-detail {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #3a3a3a;
+            margin-bottom: 2rem;
+            border-left: 2px solid #d4d4d4;
+            padding-left: 1rem;
+        }
+
+        .bio-poem {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #2c2c2c;
+            white-space: pre-line;
+            font-weight: 350;
+            font-style: normal;
+            margin-top: 1rem;
+        }
+
+        /* 系列按钮 */
+        .series-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1.8rem 0 1rem;
+        }
+
+        .series-tile {
+            background: #f6f6f6;
+            padding: 0.7rem 1.6rem;
+            font-size: 0.95rem;
+            font-weight: 380;
+            color: #2a2a2a;
+            border-radius: 50px;
+        }
+
+        .series-tile.active-series {
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .works-subnote {
+            font-size: 0.75rem;
+            color: #8a8a8a;
+            margin-top: 0.2rem;
+            letter-spacing: 0.01em;
+        }
+
+        /* 作品网格 */
+        .artworks-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .artwork-card {
+            background: #fbfbfb;
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .artwork-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .artwork-img {
+            width: 100%;
+            aspect-ratio: 4 / 5;
+            object-fit: cover;
+            background: #ececec;
+            display: block;
+        }
+
+        .artwork-title {
+            font-size: 0.8rem;
+            font-weight: 400;
+            margin-top: 0.7rem;
+            letter-spacing: 0.01em;
+            color: #2e2e2e;
+            text-align: center;
+        }
+
+        /* 灯箱 */
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(20, 20, 20, 0.94);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.2s, opacity 0.2s ease;
+            cursor: pointer;
+        }
+
+        .lightbox.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .lightbox img {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            border-radius: 2px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            font-size: 2rem;
+            color: #eee;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-weight: 300;
+        }
+
+        /* 更多链接 */
+        .links-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            max-width: 280px;
+            margin-top: 2rem;
+        }
+
+        .ext-link {
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 380;
+            color: #2b2b2b;
+            border-bottom: 1px solid #e0e0e0;
+            width: fit-content;
+            padding-bottom: 0.25rem;
+        }
+
+        /* 响应式 */
+        @media (max-width: 720px) {
+            .main-nav {
+                gap: 1rem;
+                bottom: 7%;
+            }
+            .nav-btn {
+                padding: 0.5rem 1.2rem;
+                font-size: 0.85rem;
+                min-width: 85px;
+            }
+            .lang-switch {
+                top: 1.2rem;
+                right: 1.2rem;
+                padding: 0.2rem 0.8rem;
+            }
+            .page {
+                padding: 4rem 1.2rem 3rem;
+            }
+            .page-title {
+                font-size: 1.6rem;
+            }
+            .artist-container {
+                flex-direction: column;
+                gap: 1.6rem;
+            }
+            .artist-name {
+                font-size: 1.8rem;
+            }
+            .bio-poem, .artist-bio-detail {
+                font-size: 0.92rem;
+            }
+            .artworks-gallery {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 1.2rem;
+            }
+            .lightbox img {
+                max-width: 95vw;
+                max-height: 85vh;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .series-tile {
+                padding: 0.45rem 1.2rem;
+                font-size: 0.8rem;
+            }
+            .artworks-gallery {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app" id="app">
+    <!-- 首页 -->
+    <div class="homepage" id="homepage">
+        <img class="bg-image" src="网页首页背景.jpg" alt="background" onerror="this.src='https://placehold.co/1920x1080/e8e2d6/8a7a6a?text=background'">
+        <div class="homepage-overlay"></div>
+
+        <div class="lang-switch" id="langSwitch">
+            <button class="lang-btn" data-lang="zh">中文</button>
+            <button class="lang-btn" data-lang="en">EN</button>
+            <button class="lang-btn" data-lang="ja">日</button>
+        </div>
+
+        <div class="main-nav" id="mainNav">
+            <button class="nav-btn" data-page="intro" id="navIntro">Artist</button>
+            <button class="nav-btn" data-page="works" id="navWorks">Works</button>
+            <button class="nav-btn" data-page="more" id="navMore">More</button>
+        </div>
+    </div>
+
+    <!-- 作家介绍页 -->
+    <div id="introPage" class="page">
+        <button class="close-btn" data-close="intro">✕</button>
+        <div class="page-content">
+            <div class="artist-container">
+                <div class="artist-text">
+                    <div class="artist-name" id="artistName">易传胤</div>
+                    <div class="artist-bio-detail" id="artistBioDetail">
+                        生于2001 · 来自中国武汉<br>
+                        毕业于湖北美术学院，现就读日本女子美大学院。<br>
+                        以版画创作为主，立体装置，手绘，多样的创作方式来构建自己世界。
+                    </div>
+                    <div class="bio-poem" id="bioPoem">
+                        我是谁<br>
+                        没有答案<br>
+                        我只是我情绪的任何状态<br>
+                        是愤怒，低落，厌恶，喜悦，挣扎<br>
+                        在异界寻找我的存在<br>
+                        <br>
+                        在每一个不眠的夜晚。<br>
+                        那些不眠的情绪成诗<br>
+                        我的回忆，幻想，痛感<br>
+                        都在另一个遥远的异界爆发
+                    </div>
+                </div>
+                <div class="artist-photo">
+                    <img src="作者照片.jpg" alt="肖像" id="authorPhoto" onerror="this.src='https://placehold.co/600x800/f3efe8/8a8a8a?text=artist'">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 作品页 -->
+    <div id="worksPage" class="page">
+        <button class="close-btn" data-close="works">✕</button>
+        <div class="page-content">
+            <h2 class="page-title" id="worksTitle">作品</h2>
+            <div id="seriesContainer" class="series-grid"></div>
+            <div id="seriesDescription" class="works-subnote"></div>
+            <div id="artworksGallery" class="artworks-gallery"></div>
+        </div>
+    </div>
+
+    <!-- 更多页 -->
+    <div id="morePage" class="page">
+        <button class="close-btn" data-close="more">✕</button>
+        <div class="page-content">
+            <h2 class="page-title" id="moreTitle">更多</h2>
+            <div class="links-list" id="linksList"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 灯箱 -->
+<div id="lightbox" class="lightbox">
+    <button class="lightbox-close" id="lightboxClose">✕</button>
+    <img id="lightboxImg" src="" alt="全尺寸作品">
+</div>
+
+<script>
+    // ---------- 多语言内容 (完整版：姓名+履历+诗+社交) ----------
+    const translations = {
+        zh: {
+            artistName: "易传胤",
+            artistBioDetail: "生于2001 · 来自中国武汉\n毕业于湖北美术学院，现就读日本女子美大学院。\n以版画创作为主，立体装置，手绘，多样的创作方式来构建自己世界。",
+            bioPoem: `我是谁\n没有答案\n我只是我情绪的任何状态\n是愤怒，低落，厌恶，喜悦，挣扎\n在异界寻找我的存在\n\n在每一个不眠的夜晚。\n那些不眠的情绪成诗\n我的回忆，幻想，痛感\n都在另一个遥远的异界爆发`,
+            worksTitle: "作品",
+            nav: { intro: "艺术家", works: "作品", more: "更多" },
+            series: {
+                "canpian": "残片",
+                "meng": "梦！",
+                "panghuang": "彷徨",
+                "ruye": "入夜",
+                "yijie": "异界",
+                "zhuiru": "坠入"
+            },
+            seriesDesc: {
+                "canpian": "碎片 · 记忆的残影",
+                "meng": "梦境的边界 · 惊叹与迷离",
+                "panghuang": "游移不定 · 灰色地带",
+                "ruye": "暮色浸染 · 夜的序章",
+                "yijie": "另一个遥远的世界",
+                "zhuiru": "无尽坠落 · 引力之外"
+            },
+            moreLinks: [
+                { label: "Instagram", url: "https://www.instagram.com/ka_la8570/" },
+                { label: "小红书", url: "https://www.xiaohongshu.com/user/profile/610aab1f000000000100778b" },
+                { label: "Gmail", url: "mailto:maoziyi6@gmail.com" }
+            ],
+            moreTitle: "更多"
+        },
+        en: {
+            artistName: "YI CHUANYIN",
+            artistBioDetail: "Born 2001 · from Wuhan, China\nGraduated from Hubei Institute of Fine Arts, currently studying at Joshibi University of Art and Design, Japan.\nWorking primarily with printmaking, three-dimensional installations, and hand drawing — building his own world through diverse creative methods.",
+            bioPoem: `Who am I\nNo answer\nI am merely any state of my emotions\nAnger, lowness, disgust, joy, struggle\nSeeking my existence in an otherworld\n\nIn every sleepless night.\nThose sleepless emotions become poetry\nMy memories, fantasies, pains\nAll burst forth in another distant otherworld`,
+            worksTitle: "Works",
+            nav: { intro: "Artist", works: "Works", more: "More" },
+            series: {
+                "canpian": "Fragments",
+                "meng": "Dream!",
+                "panghuang": "Wander",
+                "ruye": "Nightfall",
+                "yijie": "Otherworld",
+                "zhuiru": "Plunge"
+            },
+            seriesDesc: {
+                "canpian": "shards · traces of memory",
+                "meng": "boundary of dreams · astonishment",
+                "panghuang": "hesitation · grey zone",
+                "ruye": "dusk soaked · prelude to night",
+                "yijie": "another distant realm",
+                "zhuiru": "endless fall · beyond gravity"
+            },
+            moreLinks: [
+                { label: "Instagram", url: "https://www.instagram.com/ka_la8570/" },
+                { label: "Xiaohongshu", url: "https://www.xiaohongshu.com/user/profile/610aab1f000000000100778b" },
+                { label: "Gmail", url: "mailto:maoziyi6@gmail.com" }
+            ],
+            moreTitle: "Connections"
+        },
+        ja: {
+            artistName: "易 伝胤",
+            artistBioDetail: "2001年生まれ · 中国武漢出身\n湖北美術学院卒業、現在女子美術大学大学院に在籍。\n版画を中心に、立体インスタレーション、ドローイングなど多様な制作方法で自身の世界を構築する。",
+            bioPoem: `私は誰か\n答えはない\n私はただ自分の感情のどんな状態でもある\n怒り、落ち込み、嫌悪、喜び、もがき\n異界で私の存在を探している\n\n眠れぬ夜ごとに。\n眠れぬ感情が詩となる\n私の記憶、幻想、痛み\nすべてが遠い異界で爆発する`,
+            worksTitle: "作品",
+            nav: { intro: "アーティスト", works: "作品", more: "その他" },
+            series: {
+                "canpian": "残片",
+                "meng": "夢！",
+                "panghuang": "彷徨",
+                "ruye": "入夜",
+                "yijie": "異界",
+                "zhuiru": "墜入"
+            },
+            seriesDesc: {
+                "canpian": "欠片 · 記憶の残像",
+                "meng": "夢の境界 · 驚嘆",
+                "panghuang": "ためらい · 灰色地帯",
+                "ruye": "夕暮れに染まる · 夜の序章",
+                "yijie": "もう一つの遠い世界",
+                "zhuiru": "無限の落下 · 重力の向こう"
+            },
+            moreLinks: [
+                { label: "Instagram", url: "https://www.instagram.com/ka_la8570/" },
+                { label: "Redbook", url: "https://www.xiaohongshu.com/user/profile/610aab1f000000000100778b" },
+                { label: "Gmail", url: "mailto:maoziyi6@gmail.com" }
+            ],
+            moreTitle: "その他"
+        }
+    };
+
+    // ---------- 本地图片配置 (六个系列) ----------
+    const seriesImageFiles = {
+        canpian: ["1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg", "7.jpg"],
+        meng: ["1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg", "7.jpg", "8.jpg", "9.jpg"],
+        panghuang: ["1.jpg", "2.jpg", "2-1.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg", "7.jpg", "8.jpg", "9.jpg", "10.jpg", "11.jpg", "12.jpg", "13.jpg", "14.jpg", "15.jpg", "16.jpg"],
+        ruye: ["1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg", "7.jpg", "8.jpg", "9.jpg", "10.jpg", "11.jpg", "12.jpg", "13.jpg"],
+        yijie: ["1.jpg", "2.jpg"],
+        zhuiru: ["1.jpg", "2.JPG", "3.JPG", "4.jpg", "5.jpg", "6.jpg", "7.jpg", "8.jpg"]
+    };
+
+    function getImagePath(seriesKey, filename) {
+        const folderMap = {
+            canpian: "残片",
+            meng: "梦！",
+            panghuang: "彷徨",
+            ruye: "入夜",
+            yijie: "异界",
+            zhuiru: "坠入"
+        };
+        return `images/${folderMap[seriesKey]}/${filename}`;
+    }
+
+    // 全局变量
+    let currentLang = "zh";
+    let currentSeries = "canpian";
+
+    // DOM 元素
+    const introPage = document.getElementById("introPage");
+    const worksPage = document.getElementById("worksPage");
+    const morePage = document.getElementById("morePage");
+    const seriesContainer = document.getElementById("seriesContainer");
+    const artworksGallery = document.getElementById("artworksGallery");
+    const seriesDescriptionEl = document.getElementById("seriesDescription");
+    const artistNameEl = document.getElementById("artistName");
+    const artistBioDetailEl = document.getElementById("artistBioDetail");
+    const bioPoemEl = document.getElementById("bioPoem");
+    const worksTitleEl = document.getElementById("worksTitle");
+    const moreTitleEl = document.getElementById("moreTitle");
+    const linksListEl = document.getElementById("linksList");
+    const navIntroBtn = document.getElementById("navIntro");
+    const navWorksBtn = document.getElementById("navWorks");
+    const navMoreBtn = document.getElementById("navMore");
+
+    // 灯箱
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightboxImg");
+    const lightboxClose = document.getElementById("lightboxClose");
+    function openLightbox(src) { lightboxImg.src = src; lightbox.classList.add("active"); document.body.style.overflow = "hidden"; }
+    function closeLightbox() { lightbox.classList.remove("active"); setTimeout(() => { lightboxImg.src = ""; }, 200); document.body.style.overflow = ""; }
+    lightbox.addEventListener("click", (e) => { if (e.target === lightbox || e.target === lightboxClose) closeLightbox(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && lightbox.classList.contains("active")) closeLightbox(); });
+
+    function closeAllPages() {
+        introPage.classList.remove("open");
+        worksPage.classList.remove("open");
+        morePage.classList.remove("open");
+        document.body.style.overflow = "";
+    }
+    function openPage(pageId) {
+        closeAllPages();
+        document.getElementById(pageId + "Page").classList.add("open");
+        document.body.style.overflow = "hidden";
+    }
+
+    function renderSeriesButtons(t) {
+        seriesContainer.innerHTML = "";
+        Object.keys(t.series).forEach(key => {
+            const btn = document.createElement("button");
+            btn.innerText = t.series[key];
+            btn.classList.add("series-tile");
+            if (currentSeries === key) btn.classList.add("active-series");
+            btn.addEventListener("click", () => {
+                currentSeries = key;
+                renderSeriesButtons(t);
+                renderArtworksForSeries(currentSeries, t);
+                seriesDescriptionEl.innerText = t.seriesDesc[key] || "";
+            });
+            seriesContainer.appendChild(btn);
+        });
+        seriesDescriptionEl.innerText = t.seriesDesc[currentSeries] || "";
+    }
+
+    function renderArtworksForSeries(seriesKey, t) {
+        const files = seriesImageFiles[seriesKey];
+        if (!files || files.length === 0) {
+            artworksGallery.innerHTML = "<div style='opacity:0.6; padding:2rem; text-align:center;'>— 暂无作品 —</div>";
+            return;
+        }
+        artworksGallery.innerHTML = "";
+        files.forEach(filename => {
+            const imgPath = getImagePath(seriesKey, filename);
+            const card = document.createElement("div");
+            card.className = "artwork-card";
+            const img = document.createElement("img");
+            img.src = imgPath;
+            img.alt = `${t.series[seriesKey]} · ${filename}`;
+            img.className = "artwork-img";
+            img.loading = "lazy";
+            img.onerror = function() { this.src = "https://placehold.co/500x600/f0f0f0/aaa?text=missing"; };
+            const titleSpan = document.createElement("div");
+            titleSpan.className = "artwork-title";
+            titleSpan.innerText = filename.replace(/\.(jpg|JPG|jpeg|JPEG|png)$/i, "");
+            card.appendChild(img);
+            card.appendChild(titleSpan);
+            card.addEventListener("click", () => openLightbox(imgPath));
+            artworksGallery.appendChild(card);
+        });
+    }
+
+    function updateNavTexts(t) {
+        navIntroBtn.innerText = t.nav.intro;
+        navWorksBtn.innerText = t.nav.works;
+        navMoreBtn.innerText = t.nav.more;
+    }
+
+    function updateLanguage() {
+        const t = translations[currentLang];
+        if (!t) return;
+        artistNameEl.innerText = t.artistName;
+        artistBioDetailEl.innerText = t.artistBioDetail;
+        bioPoemEl.innerText = t.bioPoem;
+        worksTitleEl.innerText = t.worksTitle;
+        moreTitleEl.innerText = t.moreTitle;
+        updateNavTexts(t);
+        linksListEl.innerHTML = "";
+        t.moreLinks.forEach(link => {
+            const a = document.createElement("a");
+            a.href = link.url;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+            a.className = "ext-link";
+            a.innerText = link.label;
+            linksListEl.appendChild(a);
+        });
+        renderSeriesButtons(t);
+        renderArtworksForSeries(currentSeries, t);
+        document.querySelectorAll(".lang-btn").forEach(btn => {
+            if (btn.getAttribute("data-lang") === currentLang) btn.classList.add("active");
+            else btn.classList.remove("active");
+        });
+    }
+
+    // 事件绑定
+    document.querySelectorAll(".nav-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const page = btn.getAttribute("data-page");
+            if (page === "intro") openPage("intro");
+            else if (page === "works") { openPage("works"); const t = translations[currentLang]; renderSeriesButtons(t); renderArtworksForSeries(currentSeries, t); }
+            else if (page === "more") openPage("more");
+        });
+    });
+    document.querySelectorAll("[data-close]").forEach(btn => btn.addEventListener("click", closeAllPages));
+    document.querySelectorAll(".lang-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const lang = btn.getAttribute("data-lang");
+            if (lang === "zh") currentLang = "zh";
+            else if (lang === "en") currentLang = "en";
+            else if (lang === "ja") currentLang = "ja";
+            updateLanguage();
+            if (worksPage.classList.contains("open")) { const t = translations[currentLang]; renderSeriesButtons(t); renderArtworksForSeries(currentSeries, t); }
+        });
+    });
+    window.addEventListener("keydown", (e) => { if (e.key === "Escape" && !lightbox.classList.contains("active")) closeAllPages(); });
+
+    updateLanguage();
+</script>
+</body>
+</html>
